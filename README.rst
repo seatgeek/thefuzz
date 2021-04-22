@@ -124,18 +124,4 @@ You can also pass additional parameters to ``extractOne`` method to make it use 
 .. |Build Status| image:: https://api.travis-ci.org/seatgeek/thefuzz.png?branch=master
    :target: https:travis-ci.org/seatgeek/thefuzz
 
-Known Ports
-============
 
-TheFuzz is being ported to other languages too! Here are a few ports we know about:
-
--  Java: `xpresso's thefuzz implementation <https://github.com/WantedTechnologies/xpresso/wiki/Approximate-string-comparison-and-pattern-matching-in-Java>`_
--  Java: `thefuzz (java port) <https://github.com/xdrop/thefuzz>`_
--  Rust: `thefuzz-rs (Rust port) <https://github.com/logannc/thefuzz-rs>`_
--  JavaScript: `fuzzball.js (JavaScript port) <https://github.com/nol13/fuzzball.js>`_
--  C++: `Tmplt/thefuzz <https://github.com/Tmplt/thefuzz>`_
--  C#: `fuzzysharp (.Net port) <https://github.com/BoomTownRoi/BoomTown.FuzzySharp>`_
--  Go: `go-fuzzywuzz (Go port) <https://github.com/paul-mannino/go-thefuzz>`_
--  Free Pascal: `TheFuzz.pas (Free Pascal port) <https://github.com/DavidMoraisFerreira/TheFuzz.pas>`_
--  Kotlin multiplatform: `TheFuzz-Kotlin <https://github.com/willowtreeapps/thefuzz-kotlin>`_
--  R: `thefuzzR (R port) <https://github.com/mlampros/thefuzzR>`_
