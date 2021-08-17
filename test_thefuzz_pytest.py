@@ -1,7 +1,7 @@
 from thefuzz import process
 
 
-def test_process_warning(capsys):
+def test_process_warning(caplog):
     """Check that a string reduced to 0 by processor logs a warning to stderr"""
 
     query = ':::::::'
@@ -9,11 +9,14 @@ def test_process_warning(capsys):
 
     _ = process.extractOne(query, choices)
 
-    out, err = capsys.readouterr()
-
-    outstr = ("WARNING:root:Applied processor reduces "
+    logstr = ("Applied processor reduces "
               "input query to empty string, "
               "all comparisons will have score 0. "
-              "[Query: ':::::::']\n")
+              "[Query: ':::::::']")
 
-    assert err == outstr
+    assert 1 == len(caplog.records)
+    log = caplog.records[0]
+
+    assert log.levelname == "WARNING"
+    assert log.name == "root"
+    assert logstr == log.message
