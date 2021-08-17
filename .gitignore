@@ -31,9 +31,12 @@ doc/aws_hostname.1
 # Hypothesis - keep the examples database
 .hypothesis/tmp
 .hypothesis/unicodedata
+.hypothesis
 
 # py.test
 .cache/
+.pytest_cache
+__pycache__
 
 # Pycharm
 .idea/
