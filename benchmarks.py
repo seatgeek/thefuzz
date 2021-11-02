@@ -88,14 +88,14 @@ for s in cirque_strings:
     print_result_from_timeit('fuzz.WRatio(u\'cirque du soleil\', u\'%s\')' % s,
                              common_setup + basic_setup, number=iterations / 100)
 
-print('Test process.exract(scorer =  fuzz.QRatio) for string: "%s"' % s)
+print('Test process.extract(scorer =  fuzz.QRatio) for string: "%s"' % s)
 print('-------------------------------')
 print_result_from_timeit('process.extract(u\'cirque du soleil\', choices, scorer =  fuzz.QRatio)',
                              common_setup + basic_setup + " from thefuzz import process; import string,random; random.seed(18);"
                              " choices = [\'\'.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(30)) for s in range(5000)]",
                               number=10)
 
-print('Test process.exract(scorer =  fuzz.WRatio) for string: "%s"' % s)
+print('Test process.extract(scorer =  fuzz.WRatio) for string: "%s"' % s)
 print('-------------------------------')
 print_result_from_timeit('process.extract(u\'cirque du soleil\', choices, scorer =  fuzz.WRatio)',
                              common_setup + basic_setup + " from thefuzz import process; import string,random; random.seed(18);"
