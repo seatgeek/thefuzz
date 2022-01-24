@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.5, 3.6, 3.8, 3.9, 3.10.0-beta.3]        
+        python-version: [2.7, 3.5, 3.6, 3.8, 3.9, "3.10"]        
         test-cmd: [py.test]
         include:
           #- python-version: pypy3.5-5.8.0
