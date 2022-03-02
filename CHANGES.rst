@@ -478,7 +478,7 @@ Changelog
 
   [mod] bad_chars shortened
 
-  [enh] Move regex compilation outside the method, otherwhise we don't get the benefit from it
+  [enh] Move regex compilation outside the method, otherwise we don't get the benefit from it
 
   [mod] Don't need all the blah just to redefine method from string module
 
