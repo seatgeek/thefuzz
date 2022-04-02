@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 import sys
 import functools
 
@@ -48,9 +47,9 @@ def check_empty_string(func):
     return decorator
 
 
-bad_chars = str("").join([chr(i) for i in range(128, 256)])  # ascii dammit!
+bad_chars = "".join([chr(i) for i in range(128, 256)])  # ascii dammit!
 if PY3:
-    translation_table = dict((ord(c), None) for c in bad_chars)
+    translation_table = {ord(c): None for c in bad_chars}
     unicode = str
 
 

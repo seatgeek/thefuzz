@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 import re
 import string
 import sys
@@ -8,7 +7,7 @@ if PY3:
     string = str
 
 
-class StringProcessor(object):
+class StringProcessor:
     """
     This class defines method to process strings in the most
     efficient way. Ideally all the methods below use unicode strings
