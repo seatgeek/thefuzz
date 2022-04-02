@@ -171,9 +171,9 @@ class RatioTest(unittest.TestCase):
         s3 = "LSINJHUANG DISTRIC"
         s4 = "SINJHUANG DISTRICT"
 
-        self.assertTrue(fuzz.partial_ratio(s1, s2) > 75)
-        self.assertTrue(fuzz.partial_ratio(s1, s3) > 75)
-        self.assertTrue(fuzz.partial_ratio(s1, s4) > 75)
+        self.assertGreater(fuzz.partial_ratio(s1, s2), 75)
+        self.assertGreater(fuzz.partial_ratio(s1, s3), 75)
+        self.assertGreater(fuzz.partial_ratio(s1, s4), 75)
 
     def testRatioUnicodeString(self):
         s1 = "\u00C1"
@@ -420,9 +420,9 @@ class ProcessTest(unittest.TestCase):
         query = "new york mets vs chicago cubs"
         # Only find 100-score cases
         res = process.extractOne(query, choices, score_cutoff=100)
-        self.assertTrue(res is not None)
+        self.assertIsNotNone(res)
         best_match, score = res
-        self.assertTrue(best_match is choices[0])
+        self.assertIs(best_match, choices[0])
 
     def testEmptyStrings(self):
         choices = [
@@ -460,7 +460,7 @@ class ProcessTest(unittest.TestCase):
         search = 'aaa'
         result = [(value, confidence) for value, confidence in
                   process.extract(search, generate_choices())]
-        self.assertTrue(len(result) > 0)
+        self.assertGreater(len(result), 0)
 
     def test_dict_like_extract(self):
         """We should be able to use a dict-like object for choices, not only a
@@ -473,9 +473,9 @@ class ProcessTest(unittest.TestCase):
         choices = UserDict({'aa': 'bb', 'a1': None})
         search = 'aaa'
         result = process.extract(search, choices)
-        self.assertTrue(len(result) > 0)
+        self.assertGreater(len(result), 0)
         for value, confidence, key in result:
-            self.assertTrue(value in choices.values())
+            self.assertIn(value, choices.values())
 
     def test_dedupe(self):
         """We should be able to use a list-like object for contains_dupes
@@ -484,7 +484,7 @@ class ProcessTest(unittest.TestCase):
         contains_dupes = ['Frodo Baggins', 'Tom Sawyer', 'Bilbo Baggin', 'Samuel L. Jackson', 'F. Baggins', 'Frody Baggins', 'Bilbo Baggins']
 
         result = process.dedupe(contains_dupes)
-        self.assertTrue(len(result) < len(contains_dupes))
+        self.assertLess(len(result), len(contains_dupes))
 
         # Test 2
         contains_dupes = ['Tom', 'Dick', 'Harry']
