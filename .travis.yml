@@ -2,17 +2,17 @@ language: python
 matrix:
   include:
   - python: "2.7"
-    env: TEST_SUITE=py.test
+    env: TEST_SUITE=pytest
   - python: "3.4"
-    env: TEST_SUITE=py.test
+    env: TEST_SUITE=pytest
   - python: "3.5"
-    env: TEST_SUITE=py.test
+    env: TEST_SUITE=pytest
   - python: "3.6"
-    env: TEST_SUITE=py.test
+    env: TEST_SUITE=pytest
   - python: "pypy"
-    env: TEST_SUITE=py.test
+    env: TEST_SUITE=pytest
   - python: "pypy3.5-5.8.0"
-    env: TEST_SUITE="py.test test_thefuzz.py test_thefuzz_pytest.py"
+    env: TEST_SUITE="pytest test_thefuzz.py test_thefuzz_pytest.py"
   - python: 3.6
     env: TEST_SUITE="python setup.py check --restructuredtext --strict --metadata"
 install:
