@@ -17,6 +17,7 @@ except ImportError:
 def open_file(fname):
     return open(os.path.join(os.path.dirname(__file__), fname))
 
+
 setup(
     name='thefuzz',
     version=__version__,
@@ -30,11 +31,12 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3 :: Only',
     ],
     description='Fuzzy string matching in python',
     long_description=open_file('README.rst').read(),
