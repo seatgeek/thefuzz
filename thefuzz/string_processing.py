@@ -1,10 +1,4 @@
 import re
-import string
-import sys
-
-PY3 = sys.version_info[0] == 3
-if PY3:
-    string = str
 
 
 class StringProcessor:
@@ -23,7 +17,3 @@ class StringProcessor:
         numbers with a single white space.
         """
         return cls.regex.sub(" ", a_string)
-
-    strip = staticmethod(string.strip)
-    to_lower_case = staticmethod(string.lower)
-    to_upper_case = staticmethod(string.upper)

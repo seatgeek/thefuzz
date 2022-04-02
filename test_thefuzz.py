@@ -1,15 +1,11 @@
 import unittest
 import re
-import sys
 import pycodestyle
 
 from thefuzz import fuzz
 from thefuzz import process
 from thefuzz import utils
 from thefuzz.string_processing import StringProcessor
-
-if sys.version_info[0] == 3:
-    unicode = str
 
 
 class StringProcessingTest(unittest.TestCase):
@@ -52,15 +48,9 @@ class UtilsTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_asciidammit(self):
+    def test_ascii_only(self):
         for s in self.mixed_strings:
-            utils.asciidammit(s)
-
-    def test_asciionly(self):
-        for s in self.mixed_strings:
-            # ascii only only runs on strings
-            s = utils.asciidammit(s)
-            utils.asciionly(s)
+            utils.ascii_only(s)
 
     def test_fullProcess(self):
         for s in self.mixed_strings:
@@ -165,11 +155,11 @@ class RatioTest(unittest.TestCase):
         # misordered full matches are scaled by .95
         self.assertEqual(fuzz.WRatio(self.s4, self.s5), 95)
 
-    def testWRatioUnicode(self):
-        self.assertEqual(fuzz.WRatio(unicode(self.s1), unicode(self.s1a)), 100)
+    def testWRatioStr(self):
+        self.assertEqual(fuzz.WRatio(str(self.s1), str(self.s1a)), 100)
 
-    def testQRatioUnicode(self):
-        self.assertEqual(fuzz.WRatio(unicode(self.s1), unicode(self.s1a)), 100)
+    def testQRatioStr(self):
+        self.assertEqual(fuzz.WRatio(str(self.s1), str(self.s1a)), 100)
 
     def testEmptyStringsScore100(self):
         self.assertEqual(fuzz.ratio("", ""), 100)
@@ -412,8 +402,7 @@ class ProcessTest(unittest.TestCase):
         # we don't want to randomly match to something, so we use a reasonable cutoff
 
         best = process.extractOne(query, choices, score_cutoff=50)
-        self.assertTrue(best is None)
-        # self.assertIsNone(best) # unittest.TestCase did not have assertIsNone until Python 2.7
+        self.assertIsNone(best)
 
         # however if we had no cutoff, something would get returned
 
