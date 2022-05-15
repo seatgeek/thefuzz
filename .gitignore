@@ -33,7 +33,7 @@ doc/aws_hostname.1
 .hypothesis/unicodedata
 .hypothesis
 
-# py.test
+# pytest
 .cache/
 .pytest_cache
 __pycache__
