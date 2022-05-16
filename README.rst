@@ -9,7 +9,7 @@ Fuzzy string matching like a boss. It uses `Levenshtein Distance <https://en.wik
 Requirements
 ============
 
--  Python 2.7 or higher
+-  Python 3.7 or higher
 -  difflib
 -  `python-Levenshtein <https://github.com/ztane/python-Levenshtein/>`_ (optional, provides a 4-10x speedup in String
    Matching, though may result in `differing results for certain cases <https://github.com/seatgeek/fuzzywuzzy/issues/128>`_)
@@ -47,7 +47,7 @@ Adding to your ``requirements.txt`` file (run ``pip install -r requirements.txt`
 .. code:: bash
 
     git+ssh://git@github.com/seatgeek/thefuzz.git@0.19.0#egg=thefuzz
-    
+
 Manually via GIT
 
 .. code:: bash
@@ -115,7 +115,7 @@ Process
 You can also pass additional parameters to ``extractOne`` method to make it use a specific scorer. A typical use case is to match file paths:
 
 .. code:: python
-  
+
     >>> process.extractOne("System of a down - Hypnotize - Heroin", songs)
         ('/music/library/good/System of a Down/2005 - Hypnotize/01 - Attack.mp3', 86)
     >>> process.extractOne("System of a down - Hypnotize - Heroin", songs, scorer=fuzz.token_sort_ratio)

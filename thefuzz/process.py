@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# encoding: utf-8
 from . import fuzz
 from . import utils
 import heapq
@@ -81,9 +80,9 @@ def extractWithoutOrder(query, choices, processor=default_processor, scorer=defa
     processed_query = processor(query)
 
     if len(processed_query) == 0:
-        _logger.warning(u"Applied processor reduces input query to empty string, "
+        _logger.warning("Applied processor reduces input query to empty string, "
                         "all comparisons will have score 0. "
-                        "[Query: \'{0}\']".format(query))
+                        f"[Query: \'{query}\']")
 
     # Don't run full_process twice
     if scorer in [fuzz.WRatio, fuzz.QRatio,

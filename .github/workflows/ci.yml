@@ -6,20 +6,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [2.7, 3.5, 3.6, 3.8, 3.9, "3.10"]
+        python-version: [3.7, 3.8, 3.9, "3.10"]
         test-cmd: [pytest]
         include:
-          #- python-version: pypy3.5-5.8.0
+          #- python-version: pyp-y3.8
           #  test-cmd: pytest test_thefuzz.py test_thefuzz_pytest.py
-          - python-version: 3.6
+          - python-version: "3.7"
             test-cmd: python setup.py check --restructuredtext --strict --metadata
-          - python-version: 3.8
+          - python-version: "3.10"
             test-cmd: python setup.py check --restructuredtext --strict --metadata
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
