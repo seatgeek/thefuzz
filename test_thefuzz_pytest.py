@@ -18,5 +18,5 @@ def test_process_warning(caplog):
     log = caplog.records[0]
 
     assert log.levelname == "WARNING"
-    assert log.name == "root"
+    assert log.name == "thefuzz.process"
     assert logstr == log.message
