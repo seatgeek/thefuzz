@@ -11,8 +11,8 @@ Requirements
 
 -  Python 2.7 or higher
 -  difflib
--  `python-Levenshtein <https://github.com/ztane/python-Levenshtein/>`_ (optional, provides a 4-10x speedup in String
-   Matching, though may result in `differing results for certain cases <https://github.com/seatgeek/fuzzywuzzy/issues/128>`_)
+-  `rapidfuzz <https://github.com/maxbachmann/RapidFuzz/>`_ (optional, provides a 4-10x speedup in String
+   Matching, though may result in `differing results for certain cases <https://github.com/seatgeek/thefuzz/issues/128>`_)
 
 For testing
 ~~~~~~~~~~~
@@ -29,7 +29,7 @@ Using PIP via PyPI
 
     pip install thefuzz
 
-or the following to install `python-Levenshtein` too
+or the following to install `rapidfuzz` too
 
 .. code:: bash
 

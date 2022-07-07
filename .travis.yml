@@ -1,8 +1,6 @@
 language: python
 matrix:
   include:
-  - python: "2.7"
-    env: TEST_SUITE=pytest
   - python: "3.4"
     env: TEST_SUITE=pytest
   - python: "3.5"

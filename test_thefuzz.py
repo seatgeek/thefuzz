@@ -132,7 +132,7 @@ class RatioTest(unittest.TestCase):
         self.assertEqual(fuzz.partial_token_sort_ratio(self.s8, self.s8a, full_process=False), 100)
         self.assertEqual(fuzz.partial_token_sort_ratio(self.s9, self.s9a, full_process=True), 100)
         self.assertEqual(fuzz.partial_token_sort_ratio(self.s9, self.s9a, full_process=False), 100)
-        self.assertEqual(fuzz.partial_token_sort_ratio(self.s10, self.s10a, full_process=False), 50)
+        self.assertEqual(fuzz.partial_token_sort_ratio(self.s10a, self.s10, full_process=False), 67)
 
     def testTokenSetRatio(self):
         self.assertEqual(fuzz.token_set_ratio(self.s4, self.s5), 100)
@@ -255,24 +255,24 @@ class RatioTest(unittest.TestCase):
         score = fuzz.WRatio(s1, s2, force_ascii=False)
         self.assertLess(score, 100)
 
-    def testTokenSetForceAscii(self):
+    def testPartialTokenSetRatioForceAscii(self):
         s1 = "ABCD\u00C1 HELP\u00C1"
         s2 = "ABCD HELP"
 
-        score = fuzz._token_set(s1, s2, force_ascii=True)
+        score = fuzz.partial_token_set_ratio(s1, s2, force_ascii=True)
         self.assertEqual(score, 100)
 
-        score = fuzz._token_set(s1, s2, force_ascii=False)
+        score = fuzz.partial_token_set_ratio(s1, s2, force_ascii=False)
         self.assertLess(score, 100)
 
-    def testTokenSortForceAscii(self):
+    def testPartialTokenSortRatioForceAscii(self):
         s1 = "ABCD\u00C1 HELP\u00C1"
         s2 = "ABCD HELP"
 
-        score = fuzz._token_sort(s1, s2, force_ascii=True)
+        score = fuzz.partial_token_sort_ratio(s1, s2, force_ascii=True)
         self.assertEqual(score, 100)
 
-        score = fuzz._token_sort(s1, s2, force_ascii=False)
+        score = fuzz.partial_token_sort_ratio(s1, s2, force_ascii=False)
         self.assertLess(score, 100)
 
 
