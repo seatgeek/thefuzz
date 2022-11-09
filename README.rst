@@ -101,6 +101,16 @@ Token Set Ratio
     >>> fuzz.token_set_ratio("fuzzy was a bear", "fuzzy fuzzy was a bear")
         100
 
+Partial Token Sort Ratio
+~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    >>> fuzz.token_sort_ratio("fuzzy was a bear", "wuzzy fuzzy was a bear")
+        84
+    >>> fuzz.partial_token_sort_ratio("fuzzy was a bear", "wuzzy fuzzy was a bear")
+        100
+        
 Process
 ~~~~~~~
 
