@@ -1,5 +1,3 @@
-# -*- coding: utf8 -*-
-
 from timeit import timeit
 import math
 import csv
@@ -34,10 +32,10 @@ choices = [
 mixed_strings = [
     "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
     "C\\'est la vie",
-    u"Ça va?",
-    u"Cães danados",
-    u"\xacCamarões assados",
-    u"a\xac\u1234\u20ac\U00008000"
+    "Ça va?",
+    "Cães danados",
+    "\xacCamarões assados",
+    "a\xac\u1234\u20ac\U00008000"
 ]
 
 common_setup = "from thefuzz import fuzz, utils; "
@@ -53,7 +51,7 @@ def print_result_from_timeit(stmt='pass', setup='pass', number=1000000):
     avg_duration = duration / float(number)
     thousands = int(math.floor(math.log(avg_duration, 1000)))
 
-    print("Total time: %fs. Average run: %.3f%s." % (
+    print("Total time: {:f}s. Average run: {:.3f}{}.".format(
         duration, avg_duration * (1000 ** -thousands), units[-thousands]))
 
 

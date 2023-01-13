@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# encoding: utf-8
-from __future__ import unicode_literals
 import platform
 import warnings
 
@@ -79,7 +77,7 @@ def _process_and_sort(s, force_ascii, full_process=True):
     tokens = ts.split()
 
     # sort tokens and join
-    sorted_string = u" ".join(sorted(tokens))
+    sorted_string = " ".join(sorted(tokens))
     return sorted_string.strip()
 
 
