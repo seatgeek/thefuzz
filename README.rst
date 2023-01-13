@@ -2,7 +2,7 @@
     :target: https://github.com/seatgeek/thefuzz
 
 TheFuzz
-==========
+=======
 
 Fuzzy string matching like a boss. It uses `Levenshtein Distance <https://en.wikipedia.org/wiki/Levenshtein_distance>`_ to calculate the differences between sequences in a simple-to-use package.
 
@@ -102,7 +102,7 @@ Token Set Ratio
         100
 
 Partial Token Sort Ratio
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
@@ -133,5 +133,3 @@ You can also pass additional parameters to ``extractOne`` method to make it use 
 
 .. |Build Status| image:: https://github.com/seatgeek/thefuzz/actions/workflows/ci.yml/badge.svg
    :target: https://github.com/seatgeek/thefuzz
-
-
