@@ -5,25 +5,6 @@ import pycodestyle
 from thefuzz import fuzz
 from thefuzz import process
 from thefuzz import utils
-from thefuzz.string_processing import StringProcessor
-
-
-class StringProcessingTest(unittest.TestCase):
-    def test_replace_non_letters_non_numbers_with_whitespace(self):
-        strings = ["new york mets - atlanta braves", "Cães danados",
-                   "New York //// Mets $$$", "Ça va?"]
-        for string in strings:
-            proc_string = StringProcessor.replace_non_letters_non_numbers_with_whitespace(string)
-            regex = re.compile(r"(?ui)[\W]")
-            for expr in regex.finditer(proc_string):
-                self.assertEqual(expr.group(), " ")
-
-    def test_dont_condense_whitespace(self):
-        s1 = "new york mets - atlanta braves"
-        s2 = "new york mets atlanta braves"
-        p1 = StringProcessor.replace_non_letters_non_numbers_with_whitespace(s1)
-        p2 = StringProcessor.replace_non_letters_non_numbers_with_whitespace(s2)
-        self.assertNotEqual(p1, p2)
 
 
 class UtilsTest(unittest.TestCase):
@@ -120,7 +101,8 @@ class RatioTest(unittest.TestCase):
         self.assertEqual(fuzz.partial_token_sort_ratio(self.s8, self.s8a, full_process=False), 100)
         self.assertEqual(fuzz.partial_token_sort_ratio(self.s9, self.s9a, full_process=True), 100)
         self.assertEqual(fuzz.partial_token_sort_ratio(self.s9, self.s9a, full_process=False), 100)
-        self.assertEqual(fuzz.partial_token_sort_ratio(self.s10, self.s10a, full_process=False), 50)
+        self.assertEqual(fuzz.partial_token_sort_ratio(self.s10, self.s10a, full_process=False), 67)
+        self.assertEqual(fuzz.partial_token_sort_ratio(self.s10a, self.s10, full_process=False), 67)
 
     def testTokenSetRatio(self):
         self.assertEqual(fuzz.token_set_ratio(self.s4, self.s5), 100)
@@ -243,58 +225,25 @@ class RatioTest(unittest.TestCase):
         score = fuzz.WRatio(s1, s2, force_ascii=False)
         self.assertLess(score, 100)
 
-    def testTokenSetForceAscii(self):
+    def testPartialTokenSetRatioForceAscii(self):
         s1 = "ABCD\u00C1 HELP\u00C1"
         s2 = "ABCD HELP"
 
-        score = fuzz._token_set(s1, s2, force_ascii=True)
+        score = fuzz.partial_token_set_ratio(s1, s2, force_ascii=True)
         self.assertEqual(score, 100)
 
-        score = fuzz._token_set(s1, s2, force_ascii=False)
+        score = fuzz.partial_token_set_ratio(s1, s2, force_ascii=False)
         self.assertLess(score, 100)
 
-    def testTokenSortForceAscii(self):
+    def testPartialTokenSortRatioForceAscii(self):
         s1 = "ABCD\u00C1 HELP\u00C1"
         s2 = "ABCD HELP"
 
-        score = fuzz._token_sort(s1, s2, force_ascii=True)
+        score = fuzz.partial_token_sort_ratio(s1, s2, force_ascii=True)
         self.assertEqual(score, 100)
 
-        score = fuzz._token_sort(s1, s2, force_ascii=False)
+        score = fuzz.partial_token_sort_ratio(s1, s2, force_ascii=False)
         self.assertLess(score, 100)
-
-
-class ValidatorTest(unittest.TestCase):
-    def setUp(self):
-        self.testFunc = lambda *args, **kwargs: (args, kwargs)
-
-    def testCheckForNone(self):
-        invalid_input = [
-            (None, None),
-            ('Some', None),
-            (None, 'Some')
-        ]
-        decorated_func = utils.check_for_none(self.testFunc)
-        for i in invalid_input:
-            self.assertEqual(decorated_func(*i), 0)
-
-        valid_input = ('Some', 'Some')
-        actual = decorated_func(*valid_input)
-        self.assertNotEqual(actual, 0)
-
-    def testCheckEmptyString(self):
-        invalid_input = [
-            ('', ''),
-            ('Some', ''),
-            ('', 'Some')
-        ]
-        decorated_func = utils.check_empty_string(self.testFunc)
-        for i in invalid_input:
-            self.assertEqual(decorated_func(*i), 0)
-
-        valid_input = ('Some', 'Some')
-        actual = decorated_func(*valid_input)
-        self.assertNotEqual(actual, 0)
 
 
 class ProcessTest(unittest.TestCase):

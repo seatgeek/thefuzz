@@ -23,7 +23,9 @@ setup(
     author='Adam Cohen',
     author_email='adam@seatgeek.com',
     packages=['thefuzz'],
-    extras_require={'speedup': ['python-levenshtein>=0.12']},
+    # keep for backwards compatibility of projects depending on `thefuzz[speedup]`
+    extras_require={'speedup': []},
+    install_requires= ['rapidfuzz>=2.1.2'],
     url='https://github.com/seatgeek/thefuzz',
     license="GPLv2",
     classifiers=[
@@ -41,4 +43,5 @@ setup(
     description='Fuzzy string matching in python',
     long_description=open_file('README.rst').read(),
     zip_safe=True,
+    python_requires='>=3.7'
 )

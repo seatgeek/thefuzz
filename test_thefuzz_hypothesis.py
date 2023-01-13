@@ -2,7 +2,7 @@ from itertools import product
 from functools import partial
 from string import ascii_letters, digits, punctuation
 
-from hypothesis import given, assume, settings
+from hypothesis import given, assume, settings, HealthCheck
 import hypothesis.strategies as st
 import pytest
 
@@ -62,7 +62,7 @@ def full_scorers_processors():
 @pytest.mark.parametrize('scorer,processor',
                          scorers_processors())
 @given(data=st.data())
-@settings(max_examples=20, deadline=5000)
+@settings(max_examples=20, deadline=5000, suppress_health_check=[HealthCheck.data_too_large])
 def test_identical_strings_extracted(scorer, processor, data):
     """
     Test that identical strings will always return a perfect match.
