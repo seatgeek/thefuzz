@@ -6,6 +6,38 @@ from thefuzz import fuzz
 from thefuzz import process
 from thefuzz import utils
 
+scorers = [
+    fuzz.ratio,
+    fuzz.partial_ratio,
+    fuzz.token_sort_ratio,
+    fuzz.token_set_ratio,
+    fuzz.partial_token_sort_ratio,
+    fuzz.partial_token_set_ratio,
+    fuzz.QRatio,
+    fuzz.WRatio
+]
+
+class StringProcessingTest(unittest.TestCase):
+    def test_replace_non_letters_non_numbers_with_whitespace(self):
+        strings = ["new york mets - atlanta braves", "Cães danados",
+                   "New York //// Mets $$$", "Ça va?"]
+        for string in strings:
+            proc_string = utils.full_process(string)
+            regex = re.compile(r"(?ui)[\W]")
+            for expr in regex.finditer(proc_string):
+                self.assertEqual(expr.group(), " ")
+
+    def test_dont_condense_whitespace(self):
+        s1 = "new york mets - atlanta braves"
+        s2 = "new york mets atlanta braves"
+        s3 = "new york mets   atlanta braves"
+        p1 = utils.full_process(s1)
+        p2 = utils.full_process(s2)
+        p3 = utils.full_process(s3)
+        self.assertEqual(p1, s3)
+        self.assertEqual(p2, s2)
+        self.assertEqual(p3, s3)
+
 
 class UtilsTest(unittest.TestCase):
     def setUp(self):
@@ -244,6 +276,25 @@ class RatioTest(unittest.TestCase):
 
         score = fuzz.partial_token_sort_ratio(s1, s2, force_ascii=False)
         self.assertLess(score, 100)
+
+    def testCheckForNone(self):
+        for scorer in scorers:
+            self.assertEqual(scorer(None, None), 0)
+            self.assertEqual(scorer('Some', None), 0)
+            self.assertEqual(scorer(None, 'Some'), 0)
+
+            self.assertNotEqual(scorer('Some', 'Some'), 0)
+
+    def testCheckEmptyString(self):
+        for scorer in scorers:
+            if scorer in {fuzz.token_set_ratio, fuzz.partial_token_set_ratio, fuzz.WRatio}:
+                self.assertEqual(scorer('', ''), 0)
+            else:
+                self.assertEqual(scorer('', ''), 100)
+
+            self.assertEqual(scorer('Some', ''), 0)
+            self.assertEqual(scorer('', 'Some'), 0)
+            self.assertNotEqual(scorer('Some', 'Some'), 0)
 
 
 class ProcessTest(unittest.TestCase):
