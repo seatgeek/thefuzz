@@ -14,7 +14,9 @@ scorers = [
     fuzz.partial_token_sort_ratio,
     fuzz.partial_token_set_ratio,
     fuzz.QRatio,
-    fuzz.WRatio
+    fuzz.UQRatio,
+    fuzz.WRatio,
+    fuzz.UWRatio,
 ]
 
 class StringProcessingTest(unittest.TestCase):
@@ -287,7 +289,7 @@ class RatioTest(unittest.TestCase):
 
     def testCheckEmptyString(self):
         for scorer in scorers:
-            if scorer in {fuzz.token_set_ratio, fuzz.partial_token_set_ratio, fuzz.WRatio}:
+            if scorer in {fuzz.token_set_ratio, fuzz.partial_token_set_ratio, fuzz.WRatio, fuzz.UWRatio}:
                 self.assertEqual(scorer('', ''), 0)
             else:
                 self.assertEqual(scorer('', ''), 100)
