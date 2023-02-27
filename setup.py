@@ -23,7 +23,7 @@ setup(
     author='Adam Cohen',
     author_email='adam@seatgeek.com',
     packages=['thefuzz'],
-    extras_require={'speedup': ['python-levenshtein>=0.12']},
+    extras_require={'speedup': ['Levenshtein']},
     url='https://github.com/seatgeek/thefuzz',
     license="GPLv2",
     classifiers=[
