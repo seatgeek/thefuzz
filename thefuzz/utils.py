@@ -51,6 +51,12 @@ def ascii_only(s):
     return s.translate(translation_table)
 
 
+def to_ascii(s):
+    '''replace non-ascii characters with their "close enough" ascii counterparts (e.g. 'é' and 'e')'''
+    import unicodedata
+    return unicodedata.normalize('NFKD', s).encode('ascii','ignore').decode()
+
+
 def make_type_consistent(s1, s2):
     """If objects aren't both string instances force them to strings"""
     if isinstance(s1, str) and isinstance(s2, str):
@@ -68,7 +74,7 @@ def full_process(s, force_ascii=False):
         if force_ascii == True, force convert to ascii"""
 
     if force_ascii:
-        s = ascii_only(str(s))
+        s = to_ascii(str(s))
     # Keep only Letters and Numbers (see Unicode docs).
     string_out = StringProcessor.replace_non_letters_non_numbers_with_whitespace(s)
     # Remove leading and trailing whitespaces and force into lowercase.
