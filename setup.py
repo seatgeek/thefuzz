@@ -25,7 +25,7 @@ setup(
     packages=['thefuzz'],
     # keep for backwards compatibility of projects depending on `thefuzz[speedup]`
     extras_require={'speedup': []},
-    install_requires= ['rapidfuzz>=2.1.2'],
+    install_requires= ['rapidfuzz>=2.15.0'],
     url='https://github.com/seatgeek/thefuzz',
     license="GPLv2",
     classifiers=[
