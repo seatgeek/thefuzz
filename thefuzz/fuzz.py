@@ -8,6 +8,7 @@ from rapidfuzz.fuzz import (
     partial_token_set_ratio as _partial_token_set_ratio,
     partial_token_sort_ratio as _partial_token_sort_ratio,
     WRatio as _WRatio,
+    QRatio as _QRatio,
 )
 
 from . import utils
@@ -108,7 +109,7 @@ def QRatio(s1, s2, force_ascii=True, full_process=True):
     :full_process: Process inputs, used here to avoid double processing in extract functions (Default: True)
     :return: similarity ratio
     """
-    return _rapidfuzz_scorer(_ratio, s1, s2, force_ascii, full_process)
+    return _rapidfuzz_scorer(_QRatio, s1, s2, force_ascii, full_process)
 
 
 def UQRatio(s1, s2, full_process=True):

@@ -289,7 +289,7 @@ class RatioTest(unittest.TestCase):
 
     def testCheckEmptyString(self):
         for scorer in scorers:
-            if scorer in {fuzz.token_set_ratio, fuzz.partial_token_set_ratio, fuzz.WRatio, fuzz.UWRatio}:
+            if scorer in {fuzz.token_set_ratio, fuzz.partial_token_set_ratio, fuzz.WRatio, fuzz.UWRatio, fuzz.QRatio, fuzz.UQRatio}:
                 self.assertEqual(scorer('', ''), 0)
             else:
                 self.assertEqual(scorer('', ''), 100)
