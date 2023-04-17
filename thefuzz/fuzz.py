@@ -29,7 +29,7 @@ def _rapidfuzz_scorer(scorer, s1, s2, force_ascii, full_process):
         s1 = utils.full_process(s1, force_ascii=force_ascii)
         s2 = utils.full_process(s2, force_ascii=force_ascii)
 
-    return int(round(scorer(s1, s2, processor=None)))
+    return int(round(scorer(s1, s2)))
 
 
 def ratio(s1, s2):
@@ -47,17 +47,6 @@ def partial_ratio(s1, s2):
 ##############################
 # Advanced Scoring Functions #
 ##############################
-
-def _process_and_sort(s, force_ascii, full_process=True):
-    """Return a cleaned string with token sorted."""
-    # pull tokens
-    ts = utils.full_process(s, force_ascii=force_ascii) if full_process else s
-    tokens = ts.split()
-
-    # sort tokens and join
-    sorted_string = " ".join(sorted(tokens))
-    return sorted_string.strip()
-
 
 # Sorted Token
 #   find all alphanumeric tokens in the string

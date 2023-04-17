@@ -54,10 +54,10 @@ _scorer_lowering = {
 
 def _get_scorer(scorer):
     """
-    rapidfuzz scorers require the processor and score_cutoff argument to be available
+    rapidfuzz scorers require the score_cutoff argument to be available
     This generates a compatible wrapper function
     """
-    def wrapper(s1, s2, processor=None, score_cutoff=0):
+    def wrapper(s1, s2, score_cutoff=0):
         return scorer(s1, s2)
 
     return _scorer_lowering.get(scorer, wrapper)
