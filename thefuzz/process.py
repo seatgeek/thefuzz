@@ -74,7 +74,8 @@ def _preprocess_query(query, processor):
 
 
 def extractWithoutOrder(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0):
-    """Select the best match in a list or dictionary of choices.
+    """
+    Select the best match in a list or dictionary of choices.
 
     Find best matches in a list or dictionary of choices, return a
     generator of tuples containing the match and its score. If a dictionary
@@ -138,7 +139,8 @@ def extractWithoutOrder(query, choices, processor=default_processor, scorer=defa
 
 
 def extract(query, choices, processor=default_processor, scorer=default_scorer, limit=5):
-    """Select the best match in a list or dictionary of choices.
+    """
+    Select the best match in a list or dictionary of choices.
 
     Find best matches in a list or dictionary of choices, return a
     list of tuples containing the match and its score. If a dictionary
@@ -186,7 +188,8 @@ def extract(query, choices, processor=default_processor, scorer=default_scorer, 
 
 
 def extractBests(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0, limit=5):
-    """Get a list of the best matches to a collection of choices.
+    """
+    Get a list of the best matches to a collection of choices.
 
     Convenience function for getting the choices with best scores.
 
@@ -226,7 +229,8 @@ def extractBests(query, choices, processor=default_processor, scorer=default_sco
 
 
 def extractOne(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0):
-    """Find the single best match above a score in a list of choices.
+    """
+    Find the single best match above a score in a list of choices.
 
     This is a convenience method which returns the single best choice.
     See extract() for the full arguments list.

@@ -153,7 +153,8 @@ def WRatio(s1, s2, force_ascii=True, full_process=True):
 
 
 def UWRatio(s1, s2, full_process=True):
-    """Return a measure of the sequences' similarity between 0 and 100,
+    """
+    Return a measure of the sequences' similarity between 0 and 100,
     using different algorithms. Same as WRatio but preserving unicode.
     """
     return WRatio(s1, s2, force_ascii=False, full_process=full_process)
