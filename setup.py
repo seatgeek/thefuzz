@@ -5,17 +5,10 @@
 # This file is part of thefuzz.
 
 from thefuzz import __version__
-import os
+from setuptools import setup
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
-
-def open_file(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname))
-
+with open('README.rst') as f:
+    long_description = f.read()
 
 setup(
     name='thefuzz',
@@ -41,7 +34,7 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
     ],
     description='Fuzzy string matching in python',
-    long_description=open_file('README.rst').read(),
+    long_description=long_description,
     zip_safe=True,
     python_requires='>=3.7'
 )
