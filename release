@@ -13,8 +13,13 @@ YELLOW="\033[0;33m"   # yellow
 MAGENTA="\033[0;35m"  # magenta
 CYAN="\033[0;36m"     # cyan
 
-# ensure wheel is available
-pip install wheel > /dev/null
+# ensure the needed deps are available
+pip install --upgrade wheel build setuptools setuptools_scm > /dev/null
+
+if [[ "$PUBLIC" == "true" ]]; then
+    pip install --upgrade twine > /dev/null
+fi
+
 
 # ensure Pygment is available
 pip install Pygments > /dev/null
@@ -134,11 +139,12 @@ git push -q origin master && git push -q --tags
 if [[ "$PUBLIC" == "true" ]]; then
     echo -e "${YELLOW}--->${COLOR_OFF} Creating python release"
     cp README.rst README
-    python setup.py sdist bdist_wheel upload > /dev/null
+    python -m build > dev.null
+    twine upload ./dist/* > /dev/null
     rm README
 else
     echo -e "${YELLOW}--->${COLOR_OFF} Creating local python dist and wheel for manual release"
-    python setup.py sdist bdist_wheel > /dev/null
+    python -m build > dev.null
 fi
 
 echo -e "\n${CYAN}RELEASED VERSION ${next_version}${COLOR_OFF}\n"
