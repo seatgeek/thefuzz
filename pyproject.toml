@@ -1,5 +1,37 @@
 [build-system]
-requires = ["setuptools>=42.2", "setuptools_scm[toml]>=7"]
+requires = ["setuptools>=61.2", "setuptools_scm[toml]>=7"]
 build-backend = "setuptools.build_meta"
+
+# Copyright (c) 2014 SeatGeek
+# This file is part of thefuzz.
+
+[project]
+name = "thefuzz"
+authors = [{name = "Adam Cohen", email = "adam@seatgeek.com"}]
+license = {text = "GPL-2.0-only"}
+description = "Fuzzy string matching in python"
+readme = "README.rst"
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3 :: Only",
+]
+urls = {Homepage = "https://github.com/seatgeek/thefuzz"}
+dynamic = ["version"]
+
+[project.optional-dependencies]
+speedup = ["python-levenshtein>=0.12"]
+
+[tool.setuptools]
+packages = ["thefuzz"]
+zip-safe = true
+include-package-data = false
 
 [tool.setuptools_scm]
