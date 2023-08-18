@@ -1,3 +1,0 @@
-class StringProcessor(object):
-    @classmethod
-    def replace_non_letters_non_numbers_with_whitespace(cls, a_string: str) -> str: ...
