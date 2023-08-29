@@ -357,6 +357,14 @@ class ProcessTest(unittest.TestCase):
         best = process.extractOne(query, events, processor=lambda event: event[0])
         self.assertEqual(best[0], events[0])
 
+    def testIssue57(self):
+        """
+        account for force_ascii
+        """
+        query = str(("test", "test"))
+        choices = [("test", "test")]
+        assert process.extract(query, choices)[0][1] == 100
+
     def testWithScorer(self):
         choices = [
             "new york mets vs chicago cubs",

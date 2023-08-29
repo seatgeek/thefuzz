@@ -4,6 +4,7 @@ from . import utils
 import logging
 from rapidfuzz import fuzz as rfuzz
 from rapidfuzz import process as rprocess
+from functools import partial
 
 _logger = logging.getLogger(__name__)
 
@@ -23,11 +24,14 @@ def _get_processor(processor, scorer):
                       fuzz.UWRatio, fuzz.UQRatio):
         return processor
 
-    if not processor:
-        return utils.full_process
+    force_ascii = scorer not in [fuzz.UWRatio, fuzz.UQRatio]
+    pre_processor = partial(utils.full_process, force_ascii=force_ascii)
+
+    if not processor or processor == utils.full_process:
+        return pre_processor
 
     def wrapper(s):
-        return utils.full_process(processor(s))
+        return pre_processor(processor(s))
 
     return wrapper
 
