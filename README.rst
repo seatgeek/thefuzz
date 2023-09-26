@@ -9,7 +9,7 @@ Fuzzy string matching like a boss. It uses `Levenshtein Distance <https://en.wik
 Requirements
 ============
 
--  Python 3.7 or higher
+-  Python 3.8 or higher
 -  `rapidfuzz <https://github.com/maxbachmann/RapidFuzz/>`_
 
 For testing
@@ -21,14 +21,14 @@ For testing
 Installation
 ============
 
-Using PIP via PyPI
+Using pip via PyPI
 
 .. code:: bash
 
     pip install thefuzz
 
 
-Using PIP via Github
+Using pip via GitHub
 
 .. code:: bash
 
