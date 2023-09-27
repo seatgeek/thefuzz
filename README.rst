@@ -9,10 +9,8 @@ Fuzzy string matching like a boss. It uses `Levenshtein Distance <https://en.wik
 Requirements
 ============
 
--  Python 3.7 or higher
--  difflib
--  `python-Levenshtein <https://github.com/ztane/python-Levenshtein/>`_ (optional, provides a 4-10x speedup in String
-   Matching, though may result in `differing results for certain cases <https://github.com/seatgeek/fuzzywuzzy/issues/128>`_)
+-  Python 3.8 or higher
+-  `rapidfuzz <https://github.com/maxbachmann/RapidFuzz/>`_
 
 For testing
 ~~~~~~~~~~~
@@ -23,20 +21,14 @@ For testing
 Installation
 ============
 
-Using PIP via PyPI
+Using pip via PyPI
 
 .. code:: bash
 
     pip install thefuzz
 
-or the following to install `python-Levenshtein` too
 
-.. code:: bash
-
-    pip install thefuzz[speedup]
-
-
-Using PIP via Github
+Using pip via GitHub
 
 .. code:: bash
 
@@ -110,7 +102,7 @@ Partial Token Sort Ratio
         84
     >>> fuzz.partial_token_sort_ratio("fuzzy was a bear", "wuzzy fuzzy was a bear")
         100
-        
+
 Process
 ~~~~~~~
 

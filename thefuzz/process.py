@@ -1,22 +1,85 @@
 #!/usr/bin/env python
 from . import fuzz
 from . import utils
-import heapq
 import logging
+from rapidfuzz import fuzz as rfuzz
+from rapidfuzz import process as rprocess
 from functools import partial
-
 
 _logger = logging.getLogger(__name__)
 
-
 default_scorer = fuzz.WRatio
-
-
 default_processor = utils.full_process
 
 
+def _get_processor(processor, scorer):
+    """
+    thefuzz runs both the default preprocessing of the function and the preprocessing
+    function passed into process.* while rapidfuzz only runs the one passed into
+    process.*. This function wraps the processor to mimic this behavior
+    """
+    if scorer not in (fuzz.WRatio, fuzz.QRatio,
+                      fuzz.token_set_ratio, fuzz.token_sort_ratio,
+                      fuzz.partial_token_set_ratio, fuzz.partial_token_sort_ratio,
+                      fuzz.UWRatio, fuzz.UQRatio):
+        return processor
+
+    force_ascii = scorer not in [fuzz.UWRatio, fuzz.UQRatio]
+    pre_processor = partial(utils.full_process, force_ascii=force_ascii)
+
+    if not processor or processor == utils.full_process:
+        return pre_processor
+
+    def wrapper(s):
+        return pre_processor(processor(s))
+
+    return wrapper
+
+
+# this allows lowering the scorers back to the scorers used in rapidfuzz
+# this allows rapidfuzz to perform more optimizations behind the scenes.
+# These mapped scorers are the same with two expceptions
+# - default processor
+# - result is not rounded
+# these two exceptions need to be taken into account in the implementation
+_scorer_lowering = {
+    fuzz.ratio: rfuzz.ratio,
+    fuzz.partial_ratio: rfuzz.partial_ratio,
+    fuzz.token_set_ratio: rfuzz.token_set_ratio,
+    fuzz.token_sort_ratio: rfuzz.token_sort_ratio,
+    fuzz.partial_token_set_ratio: rfuzz.partial_token_set_ratio,
+    fuzz.partial_token_sort_ratio: rfuzz.partial_token_sort_ratio,
+    fuzz.WRatio: rfuzz.WRatio,
+    fuzz.QRatio: rfuzz.QRatio,
+    fuzz.UWRatio: rfuzz.WRatio,
+    fuzz.UQRatio: rfuzz.QRatio,
+}
+
+
+def _get_scorer(scorer):
+    """
+    rapidfuzz scorers require the score_cutoff argument to be available
+    This generates a compatible wrapper function
+    """
+    def wrapper(s1, s2, score_cutoff=0):
+        return scorer(s1, s2)
+
+    return _scorer_lowering.get(scorer, wrapper)
+
+
+def _preprocess_query(query, processor):
+    processed_query = processor(query) if processor else query
+    if len(processed_query) == 0:
+        _logger.warning("Applied processor reduces input query to empty string, "
+                        "all comparisons will have score 0. "
+                        f"[Query: \'{query}\']")
+
+    return processed_query
+
+
 def extractWithoutOrder(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0):
-    """Select the best match in a list or dictionary of choices.
+    """
+    Select the best match in a list or dictionary of choices.
 
     Find best matches in a list or dictionary of choices, return a
     generator of tuples containing the match and its score. If a dictionary
@@ -61,68 +124,27 @@ def extractWithoutOrder(query, choices, processor=default_processor, scorer=defa
 
         ('train', 22, 'bard'), ('man', 0, 'dog')
     """
-    # Catch generators without lengths
-    def no_process(x):
-        return x
+    is_mapping = hasattr(choices, "items")
+    is_lowered = scorer in _scorer_lowering
 
-    try:
-        if choices is None or len(choices) == 0:
-            return
-    except TypeError:
-        pass
+    query = _preprocess_query(query, processor)
+    it = rprocess.extract_iter(
+        query, choices,
+        processor=_get_processor(processor, scorer),
+        scorer=_get_scorer(scorer),
+        score_cutoff=score_cutoff
+    )
 
-    # If the processor was removed by setting it to None
-    # perform a noop as it still needs to be a function
-    if processor is None:
-        processor = no_process
+    for choice, score, key in it:
+        if is_lowered:
+            score = int(round(score))
 
-    # Run the processor on the input query.
-    processed_query = processor(query)
-
-    if len(processed_query) == 0:
-        _logger.warning("Applied processor reduces input query to empty string, "
-                        "all comparisons will have score 0. "
-                        f"[Query: \'{query}\']")
-
-    # Don't run full_process twice
-    if scorer in [fuzz.WRatio, fuzz.QRatio,
-                  fuzz.token_set_ratio, fuzz.token_sort_ratio,
-                  fuzz.partial_token_set_ratio, fuzz.partial_token_sort_ratio,
-                  fuzz.UWRatio, fuzz.UQRatio] \
-            and processor == utils.full_process:
-        processor = no_process
-
-    # Only process the query once instead of for every choice
-    if scorer in [fuzz.UWRatio, fuzz.UQRatio]:
-        pre_processor = partial(utils.full_process, force_ascii=False)
-        scorer = partial(scorer, full_process=False)
-    elif scorer in [fuzz.WRatio, fuzz.QRatio,
-                    fuzz.token_set_ratio, fuzz.token_sort_ratio,
-                    fuzz.partial_token_set_ratio, fuzz.partial_token_sort_ratio]:
-        pre_processor = partial(utils.full_process, force_ascii=True)
-        scorer = partial(scorer, full_process=False)
-    else:
-        pre_processor = no_process
-    processed_query = pre_processor(processed_query)
-
-    try:
-        # See if choices is a dictionary-like object.
-        for key, choice in choices.items():
-            processed = pre_processor(processor(choice))
-            score = scorer(processed_query, processed)
-            if score >= score_cutoff:
-                yield (choice, score, key)
-    except AttributeError:
-        # It's a list; just iterate over it.
-        for choice in choices:
-            processed = pre_processor(processor(choice))
-            score = scorer(processed_query, processed)
-            if score >= score_cutoff:
-                yield (choice, score)
+        yield (choice, score, key) if is_mapping else (choice, score)
 
 
 def extract(query, choices, processor=default_processor, scorer=default_scorer, limit=5):
-    """Select the best match in a list or dictionary of choices.
+    """
+    Select the best match in a list or dictionary of choices.
 
     Find best matches in a list or dictionary of choices, return a
     list of tuples containing the match and its score. If a dictionary
@@ -166,13 +188,12 @@ def extract(query, choices, processor=default_processor, scorer=default_scorer, 
 
         [('train', 22, 'bard'), ('man', 0, 'dog')]
     """
-    sl = extractWithoutOrder(query, choices, processor, scorer)
-    return heapq.nlargest(limit, sl, key=lambda i: i[1]) if limit is not None else \
-        sorted(sl, key=lambda i: i[1], reverse=True)
+    return extractBests(query, choices, processor=processor, scorer=scorer, limit=limit)
 
 
 def extractBests(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0, limit=5):
-    """Get a list of the best matches to a collection of choices.
+    """
+    Get a list of the best matches to a collection of choices.
 
     Convenience function for getting the choices with best scores.
 
@@ -190,14 +211,30 @@ def extractBests(query, choices, processor=default_processor, scorer=default_sco
 
     Returns: A a list of (match, score) tuples.
     """
+    is_mapping = hasattr(choices, "items")
+    is_lowered = scorer in _scorer_lowering
 
-    best_list = extractWithoutOrder(query, choices, processor, scorer, score_cutoff)
-    return heapq.nlargest(limit, best_list, key=lambda i: i[1]) if limit is not None else \
-        sorted(best_list, key=lambda i: i[1], reverse=True)
+    query = _preprocess_query(query, processor)
+    results = rprocess.extract(
+        query, choices,
+        processor=_get_processor(processor, scorer),
+        scorer=_get_scorer(scorer),
+        score_cutoff=score_cutoff,
+        limit=limit
+    )
+
+    for i, (choice, score, key) in enumerate(results):
+        if is_lowered:
+            score = int(round(score))
+
+        results[i] = (choice, score, key) if is_mapping else (choice, score)
+
+    return results
 
 
 def extractOne(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0):
-    """Find the single best match above a score in a list of choices.
+    """
+    Find the single best match above a score in a list of choices.
 
     This is a convenience method which returns the single best choice.
     See extract() for the full arguments list.
@@ -217,22 +254,38 @@ def extractOne(query, choices, processor=default_processor, scorer=default_score
         A tuple containing a single match and its score, if a match
         was found that was above score_cutoff. Otherwise, returns None.
     """
-    best_list = extractWithoutOrder(query, choices, processor, scorer, score_cutoff)
-    try:
-        return max(best_list, key=lambda i: i[1])
-    except ValueError:
-        return None
+    is_mapping = hasattr(choices, "items")
+    is_lowered = scorer in _scorer_lowering
+
+    query = _preprocess_query(query, processor)
+    res = rprocess.extractOne(
+        query, choices,
+        processor=_get_processor(processor, scorer),
+        scorer=_get_scorer(scorer),
+        score_cutoff=score_cutoff
+    )
+
+    if res is None:
+        return res
+
+    choice, score, key = res
+
+    if is_lowered:
+        score = int(round(score))
+
+    return (choice, score, key) if is_mapping else (choice, score)
 
 
 def dedupe(contains_dupes, threshold=70, scorer=fuzz.token_set_ratio):
-    """This convenience function takes a list of strings containing duplicates and uses fuzzy matching to identify
-    and remove duplicates. Specifically, it uses the process.extract to identify duplicates that
+    """
+    This convenience function takes a list of strings containing duplicates and uses fuzzy matching to identify
+    and remove duplicates. Specifically, it uses process.extract to identify duplicates that
     score greater than a user defined threshold. Then, it looks for the longest item in the duplicate list
     since we assume this item contains the most entity information and returns that. It breaks string
     length ties on an alphabetical sort.
 
     Note: as the threshold DECREASES the number of duplicates that are found INCREASES. This means that the
-        returned deduplicated list will likely be shorter. Raise the threshold for fuzzy_dedupe to be less
+        returned deduplicated list will likely be shorter. Raise the threshold for dedupe to be less
         sensitive.
 
     Args:
@@ -249,39 +302,12 @@ def dedupe(contains_dupes, threshold=70, scorer=fuzz.token_set_ratio):
         A deduplicated list. For example:
 
             In: contains_dupes = ['Frodo Baggin', 'Frodo Baggins', 'F. Baggins', 'Samwise G.', 'Gandalf', 'Bilbo Baggins']
-            In: fuzzy_dedupe(contains_dupes)
+            In: dedupe(contains_dupes)
             Out: ['Frodo Baggins', 'Samwise G.', 'Bilbo Baggins', 'Gandalf']
-        """
-
-    extractor = []
-
-    # iterate over items in *contains_dupes*
+    """
+    deduped = set()
     for item in contains_dupes:
-        # return all duplicate matches found
-        matches = extract(item, contains_dupes, limit=None, scorer=scorer)
-        # filter matches based on the threshold
-        filtered = [x for x in matches if x[1] > threshold]
-        # if there is only 1 item in *filtered*, no duplicates were found so append to *extracted*
-        if len(filtered) == 1:
-            extractor.append(filtered[0][0])
+        matches = extractBests(item, contains_dupes, scorer=scorer, score_cutoff=threshold, limit=None)
+        deduped.add(max(matches, key=lambda x: (len(x[0]), x[0]))[0])
 
-        else:
-            # alpha sort
-            filtered = sorted(filtered, key=lambda x: x[0])
-            # length sort
-            filter_sort = sorted(filtered, key=lambda x: len(x[0]), reverse=True)
-            # take first item as our 'canonical example'
-            extractor.append(filter_sort[0][0])
-
-    # uniquify *extractor* list
-    keys = {}
-    for e in extractor:
-        keys[e] = 1
-    extractor = keys.keys()
-
-    # check that extractor differs from contain_dupes (e.g. duplicates were found)
-    # if not, then return the original list
-    if len(extractor) == len(contains_dupes):
-        return contains_dupes
-    else:
-        return extractor
+    return list(deduped) if len(deduped) != len(contains_dupes) else contains_dupes
