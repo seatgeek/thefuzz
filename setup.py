@@ -20,10 +20,10 @@ setup(
     extras_require={'speedup': []},
     install_requires=['rapidfuzz>=3.0.0, < 4.0.0'],
     url='https://github.com/seatgeek/thefuzz',
-    license="GPLv2",
+    license="MIT",
     classifiers=[
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
