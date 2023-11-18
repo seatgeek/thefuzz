@@ -16,6 +16,7 @@ setup(
     author='Adam Cohen',
     author_email='adam@seatgeek.com',
     packages=['thefuzz'],
+    include_package_data=True,
     # keep for backwards compatibility of projects depending on `thefuzz[speedup]`
     extras_require={'speedup': []},
     install_requires=['rapidfuzz>=3.0.0, < 4.0.0'],

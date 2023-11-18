@@ -1,3 +1,5 @@
 include *.txt
 include *.rst
 include test_thefuzz.py
+global-include py.typed
+global-include *.pyi
