@@ -2,9 +2,18 @@
 from . import fuzz
 from . import utils
 import logging
+import typing as t
 from rapidfuzz import fuzz as rfuzz
 from rapidfuzz import process as rprocess
 from functools import partial
+
+_T = t.TypeVar("_T")
+_Processor = t.Callable[[str], str]
+_Scorer = t.Callable[[str, str], float]
+_Choices = t.Iterable[str]
+_ChoicesMap = t.Mapping[_T, str]
+_Result = t.Tuple[str, float]
+_MappedResult = t.Tuple[str, float, _T]
 
 _logger = logging.getLogger(__name__)
 
@@ -77,7 +86,35 @@ def _preprocess_query(query, processor):
     return processed_query
 
 
-def extractWithoutOrder(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0):
+@t.overload
+def extractWithoutOrder(
+    query: str,
+    choices: _ChoicesMap[_T],
+    processor: t.Optional[_Processor] = ...,
+    scorer: _Scorer = ...,
+    score_cutoff: t.Optional[float] = ...,
+) -> t.Iterator[_MappedResult[_T]]:
+    ...
+
+
+@t.overload
+def extractWithoutOrder(
+    query: str,
+    choices: _Choices,
+    processor: t.Optional[_Processor] = ...,
+    scorer: _Scorer = ...,
+    score_cutoff: t.Optional[float] = ...,
+) -> t.Iterator[_Result, None, None]:
+    ...
+
+
+def extractWithoutOrder(
+    query: str,
+    choices: t.Union[_ChoicesMap[_T], _Choices],
+    processor: t.Optional[_Processor] = default_processor,
+    scorer: _Scorer = default_scorer,
+    score_cutoff: t.Optional[float] = 0,
+) -> t.Union[t.Iterator[_MappedResult[_T]], t.Iterator[_Result]]:
     """
     Select the best match in a list or dictionary of choices.
 
@@ -142,7 +179,35 @@ def extractWithoutOrder(query, choices, processor=default_processor, scorer=defa
         yield (choice, score, key) if is_mapping else (choice, score)
 
 
-def extract(query, choices, processor=default_processor, scorer=default_scorer, limit=5):
+@t.overload
+def extract(
+    query: str,
+    choices: _ChoicesMap[_T],
+    processor: t.Optional[_Processor] = ...,
+    scorer: _Scorer = ...,
+    limit: t.Optional[float] = ...,
+) -> t.List[_MappedResult[_T]]:
+    ...
+
+
+@t.overload
+def extract(
+    query: str,
+    choices: t.Iterable[str],
+    processor: t.Optional[_Processor] = ...,
+    scorer: _Scorer = ...,
+    limit: t.Optional[float] = ...,
+) -> t.List[_Result]:
+    ...
+
+
+def extract(
+    query: str,
+    choices: t.Union[_ChoicesMap[_T], _Choices],
+    processor: t.Optional[_Processor] = default_processor,
+    scorer: _Scorer = default_scorer,
+    limit: t.Optional[float] = 5,
+) -> t.Union[t.List[_MappedResult[_T]], t.List[_Result]]:
     """
     Select the best match in a list or dictionary of choices.
 
@@ -191,7 +256,38 @@ def extract(query, choices, processor=default_processor, scorer=default_scorer, 
     return extractBests(query, choices, processor=processor, scorer=scorer, limit=limit)
 
 
-def extractBests(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0, limit=5):
+@t.overload
+def extractBests(
+    query: str,
+    choices: _ChoicesMap[_T],
+    processor: t.Optional[_Processor] = ...,
+    scorer: _Scorer = ...,
+    score_cutoff: t.Optional[float] = ...,
+    limit: t.Optional[float] = ...,
+) -> t.List[_MappedResult[_T]]:
+    ...
+
+
+@t.overload
+def extractBests(
+    query: str,
+    choices: t.Iterable[str],
+    processor: t.Optional[_Processor] = ...,
+    scorer: _Scorer = ...,
+    score_cutoff: t.Optional[float] = ...,
+    limit: t.Optional[int] = ...,
+) -> t.List[_Result]:
+    ...
+
+
+def extractBests(
+    query: str,
+    choices: t.Union[_ChoicesMap[_T], _Choices],
+    processor: t.Optional[_Processor] = default_processor,
+    scorer: _Scorer = default_scorer,
+    score_cutoff: t.Optional[float] = 0,
+    limit: t.Optional[float] = 5,
+) -> t.Union[t.List[_MappedResult[_T]], t.List[_Result]]:
     """
     Get a list of the best matches to a collection of choices.
 
@@ -232,7 +328,35 @@ def extractBests(query, choices, processor=default_processor, scorer=default_sco
     return results
 
 
-def extractOne(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0):
+@t.overload
+def extractOne(
+    query: str,
+    choices: _ChoicesMap[_T],
+    procprocessor: t.Optional[_Processor] = ...,
+    scorer: _Scorer = ...,
+    score_cutoff: t.Optional[float] = ...,
+) -> t.Optional[_MappedResult[_T]]:
+    ...
+
+
+@t.overload
+def extractOne(
+    query: str,
+    choices: t.Iterable[str],
+    procprocessor: t.Optional[_Processor] = ...,
+    scorer: _Scorer = ...,
+    score_cutoff: t.Optional[float] = ...,
+) -> t.Optional[_Result]:
+    ...
+
+
+def extractOne(
+    query: str,
+    choices: t.Union[_ChoicesMap[_T], _Choices],
+    processor: t.Optional[_Processor] = default_processor,
+    scorer: _Scorer = default_scorer,
+    score_cutoff: t.Optional[float] = 0,
+) -> t.Optional[t.Union[_MappedResult[_T], _Result]]:
     """
     Find the single best match above a score in a list of choices.
 
@@ -276,7 +400,13 @@ def extractOne(query, choices, processor=default_processor, scorer=default_score
     return (choice, score, key) if is_mapping else (choice, score)
 
 
-def dedupe(contains_dupes, threshold=70, scorer=fuzz.token_set_ratio):
+_TC = t.TypeVar("_TC", bound=t.Collection[str])
+
+def dedupe(
+    contains_dupes: _TC,
+    threshold: float = 70,
+    scorer: _Scorer = fuzz.token_set_ratio,
+) -> t.Union[t.List[str], _TC]:
     """
     This convenience function takes a list of strings containing duplicates and uses fuzzy matching to identify
     and remove duplicates. Specifically, it uses process.extract to identify duplicates that
