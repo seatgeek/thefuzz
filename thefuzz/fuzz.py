@@ -32,11 +32,11 @@ def _rapidfuzz_scorer(scorer, s1, s2, force_ascii, full_process):
     return int(round(scorer(s1, s2)))
 
 
-def ratio(s1, s2):
+def ratio(s1: str, s2: str):
     return _rapidfuzz_scorer(_ratio, s1, s2, False, False)
 
 
-def partial_ratio(s1, s2):
+def partial_ratio(s1: str, s2: str):
     """
     Return the ratio of the most similar substring
     as a number between 0 and 100.
@@ -52,7 +52,7 @@ def partial_ratio(s1, s2):
 #   find all alphanumeric tokens in the string
 #   sort those tokens and take ratio of resulting joined strings
 #   controls for unordered string elements
-def token_sort_ratio(s1, s2, force_ascii=True, full_process=True):
+def token_sort_ratio(s1: str, s2: str, force_ascii: bool = True, full_process: bool = True):
     """
     Return a measure of the sequences' similarity between 0 and 100
     but sorting the token before comparing.
@@ -60,7 +60,7 @@ def token_sort_ratio(s1, s2, force_ascii=True, full_process=True):
     return _rapidfuzz_scorer(_token_sort_ratio, s1, s2, force_ascii, full_process)
 
 
-def partial_token_sort_ratio(s1, s2, force_ascii=True, full_process=True):
+def partial_token_sort_ratio(s1: str, s2: str, force_ascii: bool = True, full_process: bool = True):
     """
     Return the ratio of the most similar substring as a number between
     0 and 100 but sorting the token before comparing.
@@ -70,11 +70,11 @@ def partial_token_sort_ratio(s1, s2, force_ascii=True, full_process=True):
     )
 
 
-def token_set_ratio(s1, s2, force_ascii=True, full_process=True):
+def token_set_ratio(s1: str, s2: str, force_ascii=True, full_process=True):
     return _rapidfuzz_scorer(_token_set_ratio, s1, s2, force_ascii, full_process)
 
 
-def partial_token_set_ratio(s1, s2, force_ascii=True, full_process=True):
+def partial_token_set_ratio(s1: str, s2: str, force_ascii: bool = True, full_process: bool = True):
     return _rapidfuzz_scorer(
         _partial_token_set_ratio, s1, s2, force_ascii, full_process
     )
@@ -85,7 +85,7 @@ def partial_token_set_ratio(s1, s2, force_ascii=True, full_process=True):
 ###################
 
 # q is for quick
-def QRatio(s1, s2, force_ascii=True, full_process=True):
+def QRatio(s1: str, s2: str, force_ascii: bool = True, full_process: bool = True):
     """
     Quick ratio comparison between two strings.
 
@@ -101,7 +101,7 @@ def QRatio(s1, s2, force_ascii=True, full_process=True):
     return _rapidfuzz_scorer(_QRatio, s1, s2, force_ascii, full_process)
 
 
-def UQRatio(s1, s2, full_process=True):
+def UQRatio(s1: str, s2: str, full_process: bool = True):
     """
     Unicode quick ratio
 
@@ -115,7 +115,7 @@ def UQRatio(s1, s2, full_process=True):
 
 
 # w is for weighted
-def WRatio(s1, s2, force_ascii=True, full_process=True):
+def WRatio(s1: str, s2: str, force_ascii: bool = True, full_process: bool = True):
     """
     Return a measure of the sequences' similarity between 0 and 100, using different algorithms.
 
@@ -152,7 +152,7 @@ def WRatio(s1, s2, force_ascii=True, full_process=True):
     return _rapidfuzz_scorer(_WRatio, s1, s2, force_ascii, full_process)
 
 
-def UWRatio(s1, s2, full_process=True):
+def UWRatio(s1: str, s2: str, full_process: bool = True):
     """
     Return a measure of the sequences' similarity between 0 and 100,
     using different algorithms. Same as WRatio but preserving unicode.
