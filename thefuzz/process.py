@@ -76,14 +76,13 @@ def _get_scorer(scorer):
     return _scorer_lowering.get(scorer, wrapper)
 
 
-def _preprocess_query(query, processor):
-    processed_query = processor(query) if processor else query
-    if len(processed_query) == 0:
-        _logger.warning("Applied processor reduces input query to empty string, "
-                        "all comparisons will have score 0. "
-                        f"[Query: \'{query}\']")
-
-    return processed_query
+def _validate_query_preprocessing(query, processor):
+    if processor:
+        processed_query = processor(query)
+        if len(processed_query) == 0:
+            _logger.warning("Applied processor reduces input query to empty string, "
+                            "all comparisons will have score 0. "
+                            f"[Query: \'{query}\']")
 
 
 @t.overload
@@ -164,7 +163,7 @@ def extractWithoutOrder(
     is_mapping = hasattr(choices, "items")
     is_lowered = scorer in _scorer_lowering
 
-    query = _preprocess_query(query, processor)
+    _validate_query_preprocessing(query, processor)
     it = rprocess.extract_iter(
         query, choices,
         processor=_get_processor(processor, scorer),
@@ -310,7 +309,7 @@ def extractBests(
     is_mapping = hasattr(choices, "items")
     is_lowered = scorer in _scorer_lowering
 
-    query = _preprocess_query(query, processor)
+    _validate_query_preprocessing(query, processor)
     results = rprocess.extract(
         query, choices,
         processor=_get_processor(processor, scorer),
@@ -381,7 +380,7 @@ def extractOne(
     is_mapping = hasattr(choices, "items")
     is_lowered = scorer in _scorer_lowering
 
-    query = _preprocess_query(query, processor)
+    _validate_query_preprocessing(query, processor)
     res = rprocess.extractOne(
         query, choices,
         processor=_get_processor(processor, scorer),
