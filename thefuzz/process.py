@@ -15,8 +15,6 @@ _ChoicesMap = t.Mapping[_T, str]
 _Result = t.Tuple[str, float]
 _MappedResult = t.Tuple[str, float, _T]
 
-_logger = logging.getLogger(__name__)
-
 default_scorer = fuzz.WRatio
 default_processor = utils.full_process
 
@@ -74,16 +72,6 @@ def _get_scorer(scorer):
         return scorer(s1, s2)
 
     return _scorer_lowering.get(scorer, wrapper)
-
-
-def _preprocess_query(query, processor):
-    processed_query = processor(query) if processor else query
-    if len(processed_query) == 0:
-        _logger.warning("Applied processor reduces input query to empty string, "
-                        "all comparisons will have score 0. "
-                        f"[Query: \'{query}\']")
-
-    return processed_query
 
 
 @t.overload
@@ -164,7 +152,6 @@ def extractWithoutOrder(
     is_mapping = hasattr(choices, "items")
     is_lowered = scorer in _scorer_lowering
 
-    query = _preprocess_query(query, processor)
     it = rprocess.extract_iter(
         query, choices,
         processor=_get_processor(processor, scorer),
@@ -310,7 +297,6 @@ def extractBests(
     is_mapping = hasattr(choices, "items")
     is_lowered = scorer in _scorer_lowering
 
-    query = _preprocess_query(query, processor)
     results = rprocess.extract(
         query, choices,
         processor=_get_processor(processor, scorer),
@@ -381,7 +367,6 @@ def extractOne(
     is_mapping = hasattr(choices, "items")
     is_lowered = scorer in _scorer_lowering
 
-    query = _preprocess_query(query, processor)
     res = rprocess.extractOne(
         query, choices,
         processor=_get_processor(processor, scorer),
