@@ -406,6 +406,7 @@ def dedupe(
     contains_dupes: _TC,
     threshold: float = 70,
     scorer: _Scorer = fuzz.token_set_ratio,
+    len_selector: str = "longest"
 ) -> t.Union[t.List[str], _TC]:
     """
     This convenience function takes a list of strings containing duplicates and uses fuzzy matching to identify
@@ -427,17 +428,34 @@ def dedupe(
             of the form f(query, choice) -> int.
             By default, fuzz.token_set_ratio() is used and expects both query and
             choice to be strings.
+        len_selector: Choose whether to return the longest or shortest item in the duplicate list.
+            We assume 'longest' contains the most detailed entity information about the group.
+            We assume 'shortest' returns the most generalized information about the entity group.
 
     Returns:
-        A deduplicated list. For example:
+        A deduplicated list that returns the longest item. For example:
 
             In: contains_dupes = ['Frodo Baggin', 'Frodo Baggins', 'F. Baggins', 'Samwise G.', 'Gandalf', 'Bilbo Baggins']
             In: dedupe(contains_dupes)
             Out: ['Frodo Baggins', 'Samwise G.', 'Bilbo Baggins', 'Gandalf']
+        
+        A deduplicated list that returns the shortest item.
+            In: dup_universities = ["Duke University",
+                                    "Duke University Department of Chemistry",
+                                    "Duke University Hospital",
+                                    "Stanford",
+                                    "Stanford University Business School",
+                                    'Stanford University Engineering Department',
+                                    'Stanford University Biology Department']
+            In: dedupe(dup_universities, threshold=70, len_selector='shortest']
+            Out: ['Stanford', 'Duke University']
     """
     deduped = set()
     for item in contains_dupes:
         matches = extractBests(item, contains_dupes, scorer=scorer, score_cutoff=threshold, limit=None)
-        deduped.add(max(matches, key=lambda x: (len(x[0]), x[0]))[0])
+        if len_selector == "longest":
+            deduped.add(max(matches, key=lambda x: (len(x[0]), x[0]))[0])
+        elif len_selector == "shortest":
+            deduped.add(min(matches, key=lambda x: (len(x[0]), x[0]))[0])
 
     return list(deduped) if len(deduped) != len(contains_dupes) else contains_dupes
