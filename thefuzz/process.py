@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from . import fuzz
 from . import utils
-import logging
 import typing as t
 from rapidfuzz import fuzz as rfuzz
 from rapidfuzz import process as rprocess
