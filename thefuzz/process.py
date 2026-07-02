@@ -438,6 +438,14 @@ def dedupe(
     deduped = set()
     for item in contains_dupes:
         matches = extractBests(item, contains_dupes, scorer=scorer, score_cutoff=threshold, limit=None)
+        if not matches:
+            # The item's processed form is empty (e.g. it contains only
+            # characters the processor strips), so every comparison scores 0
+            # and nothing meets the threshold - not even the item itself.
+            # It has no fuzzy duplicates, so keep it as its own cluster
+            # instead of crashing on max() of an empty sequence.
+            deduped.add(item)
+            continue
         deduped.add(max(matches, key=lambda x: (len(x[0]), x[0]))[0])
 
     return list(deduped) if len(deduped) != len(contains_dupes) else contains_dupes
