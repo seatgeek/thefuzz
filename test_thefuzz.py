@@ -1,5 +1,6 @@
 import unittest
 import re
+import warnings
 import pycodestyle
 
 from thefuzz import fuzz
@@ -504,6 +505,27 @@ class ProcessTest(unittest.TestCase):
 
         result = process.dedupe(contains_dupes)
         self.assertEqual(result, deduped_list)
+
+    def test_dedupe_with_empty_processed_item(self):
+        """dedupe() should not crash when an item is reduced to an empty
+        string by the default processor. Such an item has no fuzzy
+        duplicates (every comparison scores 0), so it is kept as its own
+        cluster instead of raising ValueError from max() of an empty
+        sequence. See issue #94.
+        """
+        # '###' is reduced to '' by utils.full_process, so extractBests
+        # returns no matches for it.
+        self.assertEqual(utils.full_process('###'), '')
+
+        contains_dupes = ['###', 'apple', 'apple pie']
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            result = process.dedupe(contains_dupes)
+
+        # The empty-processed item is preserved rather than dropped or crashing.
+        self.assertIn('###', result)
+        # The genuine duplicates ('apple', 'apple pie') still collapse to one.
+        self.assertEqual(len(result), 2)
 
     def test_simplematch(self):
         basic_string = 'a, b'
