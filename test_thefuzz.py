@@ -505,6 +505,11 @@ class ProcessTest(unittest.TestCase):
         result = process.dedupe(contains_dupes)
         self.assertEqual(result, deduped_list)
 
+        # Empty / processor-empty strings score 0 and must not crash dedupe.
+        self.assertCountEqual(process.dedupe(['', 'hello', '']), ['', 'hello'])
+        self.assertCountEqual(process.dedupe(['!!!', 'hello', '???']), ['!!!', 'hello', '???'])
+        self.assertCountEqual(process.dedupe(['  ', 'hello']), ['  ', 'hello'])
+
     def test_simplematch(self):
         basic_string = 'a, b'
         match_strings = ['a, b']

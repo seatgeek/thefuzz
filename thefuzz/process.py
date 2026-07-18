@@ -438,6 +438,10 @@ def dedupe(
     deduped = set()
     for item in contains_dupes:
         matches = extractBests(item, contains_dupes, scorer=scorer, score_cutoff=threshold, limit=None)
+        # Processor-empty inputs score 0 even against themselves above any positive threshold.
+        if not matches:
+            deduped.add(item)
+            continue
         deduped.add(max(matches, key=lambda x: (len(x[0]), x[0]))[0])
 
     return list(deduped) if len(deduped) != len(contains_dupes) else contains_dupes
