@@ -302,10 +302,13 @@ def extractBests(
         score_cutoff: Optional argument for score threshold. No matches with
             a score less than this number will be returned. Defaults to 0.
         limit: Optional maximum for the number of elements returned. Defaults
-            to 5.
+            to 5. Must be None or >= 0; negative values raise ValueError.
 
     Returns: A a list of (match, score) tuples.
     """
+    if limit is not None and limit < 0:
+        raise ValueError("limit must be None or >= 0")
+
     is_mapping = hasattr(choices, "items")
     is_lowered = scorer in _scorer_lowering
 

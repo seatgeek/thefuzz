@@ -462,6 +462,16 @@ class ProcessTest(unittest.TestCase):
         best = process.extractOne(query, choices)
         self.assertEqual(best[0], choices[1])
 
+    def test_negative_limit_raises(self):
+        """Negative limit must raise ValueError, not crash in rapidfuzz."""
+        with self.assertRaises(ValueError) as ctx:
+            process.extract('a', ['a', 'b'], limit=-1)
+        self.assertEqual(str(ctx.exception), "limit must be None or >= 0")
+        with self.assertRaises(ValueError):
+            process.extractBests('a', ['a', 'b'], limit=-1)
+        self.assertEqual(process.extract('a', ['a', 'b'], limit=0), [])
+        self.assertEqual(process.extract('a', ['a', 'b'], limit=1), [('a', 100)])
+
     def test_list_like_extract(self):
         """We should be able to use a list-like object for choices."""
         def generate_choices():
