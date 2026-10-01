@@ -304,7 +304,17 @@ def extractBests(
         limit: Optional maximum for the number of elements returned. Defaults
             to 5.
 
-    Returns: A a list of (match, score) tuples.
+    Returns:
+        A list of (match, score) tuples for iterable choices. For dictionary
+        choices, each result is a (match, score, key) tuple, where match is the
+        dictionary value and key is its original key.
+
+    Examples:
+        >>> extractBests("bird", ["bird", "cat"], score_cutoff=80)
+        [('bird', 100)]
+        >>> extractBests("bird", {"animal": "bird", "other": "cat"},
+        ...              score_cutoff=80)
+        [('bird', 100, 'animal')]
     """
     is_mapping = hasattr(choices, "items")
     is_lowered = scorer in _scorer_lowering
