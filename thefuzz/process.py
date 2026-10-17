@@ -76,6 +76,13 @@ def _get_scorer(scorer):
     return _scorer_lowering.get(scorer, wrapper)
 
 
+def _get_rapidfuzz_cutoff(score_cutoff, is_lowered):
+    # RapidFuzz filters fractional scores before TheFuzz rounds them to integers.
+    if is_lowered and score_cutoff is not None and 0 < score_cutoff <= 100:
+        return max(0, score_cutoff - 0.5)
+    return score_cutoff
+
+
 def _validate_query_preprocessing(query, processor):
     if processor:
         processed_query = processor(query)
@@ -168,12 +175,14 @@ def extractWithoutOrder(
         query, choices,
         processor=_get_processor(processor, scorer),
         scorer=_get_scorer(scorer),
-        score_cutoff=score_cutoff
+        score_cutoff=_get_rapidfuzz_cutoff(score_cutoff, is_lowered)
     )
 
     for choice, score, key in it:
         if is_lowered:
             score = int(round(score))
+            if score_cutoff is not None and score < score_cutoff:
+                continue
 
         yield (choice, score, key) if is_mapping else (choice, score)
 
@@ -314,17 +323,20 @@ def extractBests(
         query, choices,
         processor=_get_processor(processor, scorer),
         scorer=_get_scorer(scorer),
-        score_cutoff=score_cutoff,
+        score_cutoff=_get_rapidfuzz_cutoff(score_cutoff, is_lowered),
         limit=limit
     )
 
-    for i, (choice, score, key) in enumerate(results):
+    matches = []
+    for choice, score, key in results:
         if is_lowered:
             score = int(round(score))
+            if score_cutoff is not None and score < score_cutoff:
+                continue
 
-        results[i] = (choice, score, key) if is_mapping else (choice, score)
+        matches.append((choice, score, key) if is_mapping else (choice, score))
 
-    return results
+    return matches
 
 
 @t.overload
@@ -385,7 +397,7 @@ def extractOne(
         query, choices,
         processor=_get_processor(processor, scorer),
         scorer=_get_scorer(scorer),
-        score_cutoff=score_cutoff
+        score_cutoff=_get_rapidfuzz_cutoff(score_cutoff, is_lowered)
     )
 
     if res is None:
@@ -395,6 +407,8 @@ def extractOne(
 
     if is_lowered:
         score = int(round(score))
+        if score_cutoff is not None and score < score_cutoff:
+            return None
 
     return (choice, score, key) if is_mapping else (choice, score)
 
