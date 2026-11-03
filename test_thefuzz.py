@@ -462,6 +462,46 @@ class ProcessTest(unittest.TestCase):
         best = process.extractOne(query, choices)
         self.assertEqual(best[0], choices[1])
 
+    def testNullQuery(self):
+        # like a None choice, a None query has nothing to match
+        choices = [
+            "new york mets vs chicago cubs",
+            "new york yankees vs boston red sox"
+        ]
+
+        self.assertIsNone(process.extractOne(None, choices))
+        self.assertEqual(process.extract(None, choices), [])
+        self.assertEqual(process.extractBests(None, choices), [])
+        self.assertEqual(list(process.extractWithoutOrder(None, choices)), [])
+
+    def testProcessorReturningNone(self):
+        # a record with a missing field gives the processor nothing to return.
+        # It must score 0, not match the text "none"
+        choices = [
+            {"name": None},
+            {"name": "new york mets vs chicago cubs"},
+            {"name": "new york yankees vs boston red sox"}
+        ]
+
+        def processor(record):
+            return record["name"]
+
+        for scorer in (fuzz.WRatio, fuzz.UWRatio, fuzz.token_set_ratio):
+            results = process.extract({"name": "none"}, choices, processor=processor,
+                                      scorer=scorer, limit=None)
+            self.assertEqual([score for record, score in results
+                              if record["name"] is None], [0])
+
+            best = process.extractOne({"name": "none"}, choices, processor=processor,
+                                      scorer=scorer)
+            self.assertIsNot(best[0], choices[0])
+
+            # the same goes for a query the processor finds nothing in
+            with self.assertLogs("thefuzz.process", level="WARNING"):
+                results = process.extract({"name": None}, choices, processor=processor,
+                                          scorer=scorer, limit=None)
+            self.assertEqual({score for record, score in results}, {0})
+
     def test_list_like_extract(self):
         """We should be able to use a list-like object for choices."""
         def generate_choices():

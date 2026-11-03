@@ -40,7 +40,13 @@ def _get_processor(processor, scorer):
         return pre_processor
 
     def wrapper(s):
-        return pre_processor(processor(s))
+        processed = processor(s)
+        # the processor found no value (e.g. a record with a missing field). Like a None
+        # choice, that matches nothing: an empty string scores 0 against everything,
+        # where full_process would turn None into the text "none"
+        if processed is None:
+            return ""
+        return pre_processor(processed)
 
     return wrapper
 
@@ -77,9 +83,10 @@ def _get_scorer(scorer):
 
 
 def _validate_query_preprocessing(query, processor):
-    if processor:
+    # a None query has nothing to preprocess: rapidfuzz returns no match for it
+    if processor and query is not None:
         processed_query = processor(query)
-        if len(processed_query) == 0:
+        if processed_query is None or len(processed_query) == 0:
             _logger.warning("Applied processor reduces input query to empty string, "
                             "all comparisons will have score 0. "
                             f"[Query: \'{query}\']")
