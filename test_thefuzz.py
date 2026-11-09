@@ -19,6 +19,7 @@ scorers = [
     fuzz.UWRatio,
 ]
 
+
 class StringProcessingTest(unittest.TestCase):
     def test_replace_non_letters_non_numbers_with_whitespace(self):
         strings = ["new york mets - atlanta braves", "Cães danados",
@@ -357,6 +358,54 @@ class ProcessTest(unittest.TestCase):
         best = process.extractOne(query, events, processor=lambda event: event[0])
         self.assertEqual(best[0], events[0])
 
+    def testWithKey(self):
+        choices = [
+            {"name": "new york mets", "id": 1},
+            {"name": "atlanta braves", "id": 2}
+        ]
+        query = "new york mets"
+        best = process.extractOne(query, choices, key=lambda x: x["name"])
+        self.assertEqual(best[0], choices[0])
+
+        best_ratio = process.extractOne(query, choices, scorer=fuzz.ratio, key=lambda x: x["name"])
+        self.assertEqual(best_ratio[0], choices[0])
+
+        bests = process.extractBests(query, choices, key=lambda x: x["name"])
+        self.assertEqual(bests[0][0], choices[0])
+
+        extracted = process.extract(query, choices, key=lambda x: x["name"])
+        self.assertEqual(extracted[0][0], choices[0])
+
+        without_order = list(process.extractWithoutOrder(query, choices, key=lambda x: x["name"]))
+        matches = [m[0] for m in without_order]
+        self.assertIn(choices[0], matches)
+
+    def testWithKeyDict(self):
+        choices = {
+            "a": {"name": "new york mets", "id": 1},
+            "b": {"name": "atlanta braves", "id": 2}
+        }
+        query = "new york mets"
+        best = process.extractOne(query, choices, key=lambda x: x["name"])
+        self.assertEqual(best[0], choices["a"])
+        self.assertEqual(best[2], "a")
+
+        best_ratio = process.extractOne(query, choices, scorer=fuzz.ratio, key=lambda x: x["name"])
+        self.assertEqual(best_ratio[0], choices["a"])
+        self.assertEqual(best_ratio[2], "a")
+
+        bests = process.extractBests(query, choices, key=lambda x: x["name"])
+        self.assertEqual(bests[0][0], choices["a"])
+        self.assertEqual(bests[0][2], "a")
+
+        extracted = process.extract(query, choices, key=lambda x: x["name"])
+        self.assertEqual(extracted[0][0], choices["a"])
+        self.assertEqual(extracted[0][2], "a")
+
+        without_order = list(process.extractWithoutOrder(query, choices, key=lambda x: x["name"]))
+        keys = [m[2] for m in without_order]
+        self.assertIn("a", keys)
+
     def testIssue57(self):
         """
         account for force_ascii
@@ -523,6 +572,7 @@ class TestCodeFormat(unittest.TestCase):
         pep8style.input_dir('thefuzz')
         result = pep8style.check_files()
         self.assertEqual(result.total_errors, 0, "PEP8 POLICE - WOOOOOWOOOOOOOOOO")
+
 
 if __name__ == '__main__':
     unittest.main()         # run all tests

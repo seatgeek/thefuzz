@@ -10,10 +10,10 @@ from functools import partial
 _T = t.TypeVar("_T")
 _Processor = t.Callable[[str], str]
 _Scorer = t.Callable[[str, str], float]
-_Choices = t.Iterable[str]
-_ChoicesMap = t.Mapping[_T, str]
-_Result = t.Tuple[str, float]
-_MappedResult = t.Tuple[str, float, _T]
+_Choices = t.Iterable[t.Any]
+_ChoicesMap = t.Mapping[_T, t.Any]
+_Result = t.Tuple[t.Any, float]
+_MappedResult = t.Tuple[t.Any, float, _T]
 
 _logger = logging.getLogger(__name__)
 
@@ -76,6 +76,30 @@ def _get_scorer(scorer):
     return _scorer_lowering.get(scorer, wrapper)
 
 
+def _apply_key_to_choices(choices, key):
+    """
+    Apply a key function to a collection of choices and return a proxy
+    dictionary suitable for matching.
+
+    This ensures that the 'key' logic is handled consistently across
+    all extraction functions and allows for back-lookup of the original
+    objects.
+    """
+    is_mapping = hasattr(choices, "items")
+    if key is None:
+        return choices, choices, is_mapping
+
+    original_choices = choices
+    if is_mapping:
+        choices = {k: key(v) for k, v in original_choices.items()}
+    else:
+        if not isinstance(original_choices, list):
+            original_choices = list(original_choices)
+        choices = {i: key(c) for i, c in enumerate(original_choices)}
+
+    return choices, original_choices, is_mapping
+
+
 def _validate_query_preprocessing(query, processor):
     if processor:
         processed_query = processor(query)
@@ -92,6 +116,7 @@ def extractWithoutOrder(
     processor: t.Optional[_Processor] = ...,
     scorer: _Scorer = ...,
     score_cutoff: t.Optional[float] = ...,
+    key: t.Optional[t.Callable[[t.Any], str]] = ...,
 ) -> t.Iterator[_MappedResult[_T]]:
     ...
 
@@ -103,6 +128,7 @@ def extractWithoutOrder(
     processor: t.Optional[_Processor] = ...,
     scorer: _Scorer = ...,
     score_cutoff: t.Optional[float] = ...,
+    key: t.Optional[t.Callable[[t.Any], str]] = ...,
 ) -> t.Iterator[_Result]:
     ...
 
@@ -113,6 +139,7 @@ def extractWithoutOrder(
     processor: t.Optional[_Processor] = default_processor,
     scorer: _Scorer = default_scorer,
     score_cutoff: t.Optional[float] = 0,
+    key: t.Optional[t.Callable[[t.Any], str]] = None,
 ) -> t.Union[t.Iterator[_MappedResult[_T]], t.Iterator[_Result]]:
     """
     Select the best match in a list or dictionary of choices.
@@ -144,6 +171,15 @@ def extractWithoutOrder(
             choice to be strings.
         score_cutoff: Optional argument for score threshold. No matches with
             a score less than this number will be returned. Defaults to 0.
+        key: Optional function of the form f(a) -> b, where a is an individual
+            choice and b is the choice to be used in matching.
+
+            This can be used to match against, say, the 'name' field of
+            a dictionary:
+
+            lambda x: x['name']
+
+            Defaults to None.
 
     Returns:
         Generator of tuples containing the match and its score.
@@ -160,10 +196,12 @@ def extractWithoutOrder(
 
         ('train', 22, 'bard'), ('man', 0, 'dog')
     """
-    is_mapping = hasattr(choices, "items")
     is_lowered = scorer in _scorer_lowering
 
     _validate_query_preprocessing(query, processor)
+
+    choices, original_choices, is_mapping = _apply_key_to_choices(choices, key)
+
     it = rprocess.extract_iter(
         query, choices,
         processor=_get_processor(processor, scorer),
@@ -171,11 +209,14 @@ def extractWithoutOrder(
         score_cutoff=score_cutoff
     )
 
-    for choice, score, key in it:
+    for choice, score, k in it:
         if is_lowered:
             score = int(round(score))
 
-        yield (choice, score, key) if is_mapping else (choice, score)
+        if key is not None:
+            choice = original_choices[k]
+
+        yield (choice, score, k) if is_mapping else (choice, score)
 
 
 @t.overload
@@ -185,6 +226,7 @@ def extract(
     processor: t.Optional[_Processor] = ...,
     scorer: _Scorer = ...,
     limit: t.Optional[float] = ...,
+    key: t.Optional[t.Callable[[t.Any], str]] = ...,
 ) -> t.List[_MappedResult[_T]]:
     ...
 
@@ -196,6 +238,7 @@ def extract(
     processor: t.Optional[_Processor] = ...,
     scorer: _Scorer = ...,
     limit: t.Optional[float] = ...,
+    key: t.Optional[t.Callable[[t.Any], str]] = ...,
 ) -> t.List[_Result]:
     ...
 
@@ -206,6 +249,7 @@ def extract(
     processor: t.Optional[_Processor] = default_processor,
     scorer: _Scorer = default_scorer,
     limit: t.Optional[float] = 5,
+    key: t.Optional[t.Callable[[t.Any], str]] = None,
 ) -> t.Union[t.List[_MappedResult[_T]], t.List[_Result]]:
     """
     Select the best match in a list or dictionary of choices.
@@ -231,11 +275,20 @@ def extract(
             Defaults to thefuzz.utils.full_process().
         scorer: Optional function for scoring matches between the query and
             an individual processed choice. This should be a function
-            of the form f(query, choice) -> int.
+            of the form f(query, ojeechoice) -> int.
             By default, fuzz.WRatio() is used and expects both query and
             choice to be strings.
         limit: Optional maximum for the number of elements returned. Defaults
             to 5.
+        key: Optional function of the form f(a) -> b, where a is an individual
+            choice and b is the choice to be used in matching.
+
+            This can be used to match against, say, the 'name' field of
+            a dictionary:
+
+            lambda x: x['name']
+
+            Defaults to None.
 
     Returns:
         List of tuples containing the match and its score.
@@ -252,7 +305,7 @@ def extract(
 
         [('train', 22, 'bard'), ('man', 0, 'dog')]
     """
-    return extractBests(query, choices, processor=processor, scorer=scorer, limit=limit)
+    return extractBests(query, choices, processor=processor, scorer=scorer, limit=limit, key=key)
 
 
 @t.overload
@@ -263,6 +316,7 @@ def extractBests(
     scorer: _Scorer = ...,
     score_cutoff: t.Optional[float] = ...,
     limit: t.Optional[float] = ...,
+    key: t.Optional[t.Callable[[t.Any], str]] = ...,
 ) -> t.List[_MappedResult[_T]]:
     ...
 
@@ -270,11 +324,12 @@ def extractBests(
 @t.overload
 def extractBests(
     query: str,
-    choices: t.Iterable[str],
+    choices: t.Iterable[t.Any],
     processor: t.Optional[_Processor] = ...,
     scorer: _Scorer = ...,
     score_cutoff: t.Optional[float] = ...,
     limit: t.Optional[int] = ...,
+    key: t.Optional[t.Callable[[t.Any], str]] = ...,
 ) -> t.List[_Result]:
     ...
 
@@ -286,6 +341,7 @@ def extractBests(
     scorer: _Scorer = default_scorer,
     score_cutoff: t.Optional[float] = 0,
     limit: t.Optional[float] = 5,
+    key: t.Optional[t.Callable[[t.Any], str]] = None,
 ) -> t.Union[t.List[_MappedResult[_T]], t.List[_Result]]:
     """
     Get a list of the best matches to a collection of choices.
@@ -303,13 +359,24 @@ def extractBests(
             a score less than this number will be returned. Defaults to 0.
         limit: Optional maximum for the number of elements returned. Defaults
             to 5.
+        key: Optional function of the form f(a) -> b, where a is an individual
+            choice and b is the choice to be used in matching.
+
+            This can be used to match against, say, the 'name' field of
+            a dictionary:
+
+            lambda x: x['name']
+
+            Defaults to None.
 
     Returns: A a list of (match, score) tuples.
     """
-    is_mapping = hasattr(choices, "items")
     is_lowered = scorer in _scorer_lowering
 
     _validate_query_preprocessing(query, processor)
+
+    choices, original_choices, is_mapping = _apply_key_to_choices(choices, key)
+
     results = rprocess.extract(
         query, choices,
         processor=_get_processor(processor, scorer),
@@ -318,11 +385,14 @@ def extractBests(
         limit=limit
     )
 
-    for i, (choice, score, key) in enumerate(results):
+    for i, (choice, score, k) in enumerate(results):
         if is_lowered:
             score = int(round(score))
 
-        results[i] = (choice, score, key) if is_mapping else (choice, score)
+        if key is not None:
+            choice = original_choices[k]
+
+        results[i] = (choice, score, k) if is_mapping else (choice, score)
 
     return results
 
@@ -331,9 +401,10 @@ def extractBests(
 def extractOne(
     query: str,
     choices: _ChoicesMap[_T],
-    procprocessor: t.Optional[_Processor] = ...,
+    processor: t.Optional[_Processor] = ...,
     scorer: _Scorer = ...,
     score_cutoff: t.Optional[float] = ...,
+    key: t.Optional[t.Callable[[t.Any], str]] = ...,
 ) -> t.Optional[_MappedResult[_T]]:
     ...
 
@@ -341,10 +412,11 @@ def extractOne(
 @t.overload
 def extractOne(
     query: str,
-    choices: t.Iterable[str],
-    procprocessor: t.Optional[_Processor] = ...,
+    choices: t.Iterable[t.Any],
+    processor: t.Optional[_Processor] = ...,
     scorer: _Scorer = ...,
     score_cutoff: t.Optional[float] = ...,
+    key: t.Optional[t.Callable[[t.Any], str]] = ...,
 ) -> t.Optional[_Result]:
     ...
 
@@ -355,6 +427,7 @@ def extractOne(
     processor: t.Optional[_Processor] = default_processor,
     scorer: _Scorer = default_scorer,
     score_cutoff: t.Optional[float] = 0,
+    key: t.Optional[t.Callable[[t.Any], str]] = None,
 ) -> t.Optional[t.Union[_MappedResult[_T], _Result]]:
     """
     Find the single best match above a score in a list of choices.
@@ -372,15 +445,26 @@ def extractOne(
         score_cutoff: Optional argument for score threshold. If the best
             match is found, but it is not greater than this number, then
             return None anyway ("not a good enough match").  Defaults to 0.
+        key: Optional function of the form f(a) -> b, where a is an individual
+            choice and b is the choice to be used in matching.
+
+            This can be used to match against, say, the 'name' field of
+            a dictionary:
+
+            lambda x: x['name']
+
+            Defaults to None.
 
     Returns:
         A tuple containing a single match and its score, if a match
         was found that was above score_cutoff. Otherwise, returns None.
     """
-    is_mapping = hasattr(choices, "items")
     is_lowered = scorer in _scorer_lowering
 
     _validate_query_preprocessing(query, processor)
+
+    choices, original_choices, is_mapping = _apply_key_to_choices(choices, key)
+
     res = rprocess.extractOne(
         query, choices,
         processor=_get_processor(processor, scorer),
@@ -391,12 +475,15 @@ def extractOne(
     if res is None:
         return res
 
-    choice, score, key = res
+    choice, score, k = res
 
     if is_lowered:
         score = int(round(score))
 
-    return (choice, score, key) if is_mapping else (choice, score)
+    if key is not None:
+        choice = original_choices[k]
+
+    return (choice, score, k) if is_mapping else (choice, score)
 
 
 _TC = t.TypeVar("_TC", bound=t.Collection[str])
