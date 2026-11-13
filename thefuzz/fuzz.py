@@ -33,6 +33,12 @@ def _rapidfuzz_scorer(scorer, s1, s2, force_ascii, full_process):
 
 
 def ratio(s1, s2):
+        """
+            Return the similarity of the two strings as a number between 0 and 100.
+
+                The whole strings are compared, so extra text in either string
+                    lowers the score. See also partial_ratio().
+                        """
     return _rapidfuzz_scorer(_ratio, s1, s2, False, False)
 
 
@@ -40,6 +46,10 @@ def partial_ratio(s1, s2):
     """
     Return the ratio of the most similar substring
     as a number between 0 and 100.
+        The shorter string is compared against the best matching
+            substring of the longer string, so a string that appears in
+                full inside a longer string scores 100 even when ratio()
+                    is much lower. See also ratio().
     """
     return _rapidfuzz_scorer(_partial_ratio, s1, s2, False, False)
 
