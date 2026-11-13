@@ -59,6 +59,9 @@ Usage
 
 Simple Ratio
 ~~~~~~~~~~~~
+``ratio`` compares the two strings in full: it measures how similar
+the entire strings are, so any extra text in either string lowers
+the score.
 
 .. code:: python
 
@@ -67,11 +70,20 @@ Simple Ratio
 
 Partial Ratio
 ~~~~~~~~~~~~~
+``partial_ratio`` instead compares the shorter string with the best
+matching substring of the longer string. Use it when one string may
+be contained in a longer one, for example when searching for a short
+query inside longer text:
 
 .. code:: python
 
-    >>> fuzz.partial_ratio("this is a test", "this is a test!")
+    >>> fuzz.ratio("this is a test", "this is a test and more")
+        76
+    >>> fuzz.partial_ratio("this is a test", "this is a test and more")
         100
+In short: use ``ratio`` when the two strings should be similar as a
+whole, and ``partial_ratio`` when one string may be a substring of a
+longer one.
 
 Token Sort Ratio
 ~~~~~~~~~~~~~~~~
